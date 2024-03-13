@@ -16,11 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include QMK_KEYBOARD_H
 #define _MEDIA 0
-#define _DISCORD 1
-#define _RGB 2
-#define _LAYERS 3
-#define _APPS 4
-#define _LRPICK 5
+#define _DEV 1
+
 
 
 
@@ -28,56 +25,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_MEDIA] = LAYOUT(
              KC_MPLY,
-    LSA_T(KC_MPRV),    MO(_LAYERS),    KC_MNXT,
-    LT(_RGB, KC_MUTE),    MO(_APPS),    KC_SYSTEM_POWER
+    LSA_T(KC_MPRV),    MO(_DEV),    KC_MNXT,
+    KC_MUTE,    XXXXXXX,    KC_SYSTEM_POWER
   ),
-  [_DISCORD] = LAYOUT(
-             KC_F18,
-    KC_F19, KC_F17,   LCTL(KC_F17),
-    LCTL(KC_LEFT_BRACKET), TG(_DISCORD), LCTL(KC_RIGHT_BRACKET)
-  ),
-  [_RGB] = LAYOUT(
-             RGB_TOG,
-    LALT(KC_LSFT), KC_LSFT,   RGB_SAI,
-    RGB_VAI, TG(_RGB), RGB_HUI
-  ),
-  [_LAYERS] = LAYOUT(
-             TG(_RGB),
-    TG(_DISCORD), _______,   _______,
-    TG(_LRPICK), _______, _______
-  ),
-  [_APPS] = LAYOUT(
-             LCTL(KC_F18),
-    LCTL(KC_F16), LCTL(KC_F15),   LCTL(KC_F14),
-    LCTL(KC_F17), TG(_APPS), LCTL(KC_F19)
-  ),
-  [_LRPICK] = LAYOUT(
-             KC_U,
-    KC_E, KC_G,   KC_C,
-    KC_X, TG(_LRPICK), KC_P
-  ),
+  [_DEV] = LAYOUT(
+             QK_BOOT,
+    RGB_HUI,    _______,    RGB_HUD,
+    RGB_SAI,    TO(_MEDIA),    RGB_SAD
+  ) 
 };
 
 // Volume up/down on the encoder
 bool encoder_update_user(uint8_t index, bool clockwise) {
   uint8_t current_layer = get_highest_layer(layer_state);
-  if (current_layer == _RGB) {
+  if (current_layer == _DEV) {
     if (clockwise) {
-      tap_code_delay(KC_BRIU, 10);
+      tap_code_delay(KC_PAUSE, 10);
     } else {
-      tap_code_delay(KC_BRID, 10);
-    }
-  } else if (current_layer == _LRPICK) {
-    if (clockwise) {
-      tap_code_delay(KC_RIGHT, 20);
-    } else {
-      tap_code_delay(KC_LEFT, 20);
+      tap_code_delay(KC_SCROLL_LOCK, 10);
     }
   } else {
     if (clockwise) {
-      tap_code_delay(KC_VOLU, 10);
+      tap_code(KC_KB_VOLUME_UP);
     } else {
-      tap_code_delay(KC_VOLD, 10);
+      tap_code(KC_KB_VOLUME_DOWN);
     }
   } return false;
 }
