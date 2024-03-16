@@ -54,5 +54,4 @@ dkms.conf
 # Other
 *.DS_Store
 *.json
-*.h
-*.mk
+
