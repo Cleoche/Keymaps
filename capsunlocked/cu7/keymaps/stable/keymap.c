@@ -16,9 +16,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include QMK_KEYBOARD_H
 #define _MEDIA 0
-#define _DEV 1
-#define _LAYERS 2
-#define _DISCORD 3
+#define _DISCORD 1
+#define _DEV 2
+#define _LAYERS 3
 #define _LRFLAG 4
 #define _LRRATE 5
 
@@ -29,8 +29,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_MEDIA] = LAYOUT(
              KC_MPLY,
-    LSA_T(KC_MPRV),    TG(_LAYERS),    KC_MNXT,
+    LSA_T(KC_MPRV),    TG(_LAYERS),    LT(_DISCORD, KC_MNXT),
     LT(_DEV, KC_MUTE),    XXXXXXX,    KC_SYSTEM_POWER
+  ),
+  [_DISCORD] = LAYOUT(
+             LCTL(KC_F17),
+    LT(_LAYERS, KC_F18),    KC_F19,    KC_F17,
+    LT(_DEV, KC_MPRV),    TO(_MEDIA),    KC_MNXT
   ),
   [_DEV] = LAYOUT(
              QK_BOOT,
@@ -41,11 +46,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
              TO(_DEV),
     TO(_DISCORD),    _______,    _______,
     TO(_LRFLAG),    TO(_MEDIA),    _______
-  ),
-  [_DISCORD] = LAYOUT(
-             LCTL(KC_F17),
-    KC_F18,    KC_F19,    KC_F17,
-    LCTL(KC_LBRC),    TO(_MEDIA),    LCTL(KC_RBRC)
   ),
   [_LRFLAG] = LAYOUT(
              XXXXXXX,
@@ -62,9 +62,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #if defined(ENCODER_MAP_ENABLE)
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
   [_MEDIA] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
+  [_DISCORD] = { ENCODER_CCW_CW(LCTL(KC_LBRC), LCTL(KC_RBRC)) },
   [_DEV] = { ENCODER_CCW_CW(KC_BRID, KC_BRIU) },
-  [_LAYERS] = { ENCODER_CCW_CW(_______, _______) },
-  [_DISCORD] = { ENCODER_CCW_CW(KC_MPRV, KC_MNXT) },
+  [_LAYERS] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
   [_LRFLAG] = { ENCODER_CCW_CW(KC_LEFT, KC_RIGHT) },
   [_LRRATE] = { ENCODER_CCW_CW(_______, _______) },
 };
