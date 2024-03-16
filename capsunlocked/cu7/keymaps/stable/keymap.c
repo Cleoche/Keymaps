@@ -59,32 +59,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   )
 };
 
-// Volume up/down on the encoder
-bool encoder_update_user(uint8_t index, bool clockwise) {
-  uint8_t current_layer = get_highest_layer(layer_state);
-  if (current_layer == _DEV) {
-    if (clockwise) {
-      tap_code_delay(KC_BRIU, 10);
-    } else {
-      tap_code_delay(KC_BRID, 10);
-    }
-  } else if (current_layer == _LRFLAG) {
-    if (clockwise) {
-      tap_code_delay(KC_RGHT, 20);
-    } else {
-      tap_code_delay(KC_LEFT, 20);
-    }
-  } else if (current_layer == _DISCORD) {
-    if (clockwise) {
-      tap_code_delay(KC_MNXT, 20);
-    } else {
-      tap_code_delay(KC_MPRV, 20);
-    }
-  } else {
-    if (clockwise) {
-      tap_code(KC_VOLU);
-    } else {
-      tap_code(KC_VOLD);
-    }
-  } return false;
-}
+#if defined(ENCODER_MAP_ENABLE)
+const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
+  [_MEDIA] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
+  [_DEV] = { ENCODER_CCW_CW(KC_BRID, KC_BRIU) },
+  [_LAYERS] = { ENCODER_CCW_CW(_______, _______) },
+  [_DISCORD] = { ENCODER_CCW_CW(KC_MPRV, KC_MNXT) },
+  [_LRFLAG] = { ENCODER_CCW_CW(KC_LEFT, KC_RIGHT) },
+  [_LRRATE] = { ENCODER_CCW_CW(_______, _______) },
+};
+#endif
