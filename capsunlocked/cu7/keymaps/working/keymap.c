@@ -23,13 +23,15 @@ extern MidiDevice midi_device;
 #define _DISCORD 1
 #define _DEV 2
 #define _LAYERS 3
-#define _LRFLAG 4
-#define _LRRATE 5
+#define _LR1 4
 
-enum midi_cc_keycodes_LTRM {MIDI_CC1 = SAFE_RANGE, MIDI_CC2, MIDI_CC3, MIDI_CC4, MIDI_SENDU, MIDI_SENDD};
+enum midi_cc_keycodes_LTRM {MIDI_CC1 = SAFE_RANGE, MIDI_SENDU, MIDI_SENDD, MIDI_NEXT, MIDI_PREV, MIDI_SNXT, MIDI_SPRV, MIDI_ANULL, MIDI_HIDE};
 static uint8_t current_MIDI_ccNumber = 1;
+static uint8_t lbound = 1;
+static uint8_t ubound = 13;
+static uint8_t bounds[3][2] = {{1, 13}, {14, 17}, {18, 25}};
+static uint8_t section = 0;
 
-uint16_t encoder_val = 64;
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case MIDI_CC1:
@@ -38,39 +40,79 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       } else {}
       return false;
       break;
-    case MIDI_CC2:
-      if (record->event.pressed) {
-        current_MIDI_ccNumber = 2;
-      } else {}
-      return false;
-      break;
-    case MIDI_CC3:
-      if (record->event.pressed) {
-        current_MIDI_ccNumber = 3;
-      } else {}
-      return false;
-      break;
-    case MIDI_CC4:
-      if (record->event.pressed) {
-        current_MIDI_ccNumber = 4;
-      } else {}
-      return false;
-      break;
     case MIDI_SENDU:
       if (record->event.pressed) {
-        // encoder_val++;
-        midi_send_cc(&midi_device, 0, current_MIDI_ccNumber, 1);
+        midi_send_cc(&midi_device, 0, 2 * current_MIDI_ccNumber, 1);
       } else {}
       return false;
       break;
     case MIDI_SENDD:
       if (record->event.pressed) {
-        // encoder_val --;
-        midi_send_cc(&midi_device, 0, current_MIDI_ccNumber, 127);
+        midi_send_cc(&midi_device, 0, 2 * current_MIDI_ccNumber, 127);
       } else {}
       return false;
       break;
     default:
+      break;
+    case MIDI_NEXT:
+      if (record->event.pressed) {
+        if (current_MIDI_ccNumber < ubound) {
+          current_MIDI_ccNumber ++;
+        } else {
+          current_MIDI_ccNumber = lbound;
+        }
+      } else {}
+      return false;
+      break;
+    case MIDI_PREV:
+      if (record->event.pressed) {
+        if (current_MIDI_ccNumber > lbound) {
+        current_MIDI_ccNumber --;
+        } else {
+          current_MIDI_ccNumber = ubound;
+        }
+      } else {}
+      return false;
+      break;
+    case MIDI_SNXT:
+      if (record->event.pressed) {
+        if (section < 2) {
+          section ++;
+        } else {
+          section = 0;
+        }
+        lbound = bounds[section][0];
+        ubound = bounds[section][1];
+        current_MIDI_ccNumber = lbound;
+        midi_send_cc(&midi_device, 0, 2* section + 109, 1);
+      } else {}
+      return false;
+      break;
+    case MIDI_SPRV:
+      if (record->event.pressed){
+        if (section > 0) {
+          section --;
+        } else {
+          section = 2;
+        }
+        lbound = bounds[section][0];
+        ubound = bounds[section][1];
+        current_MIDI_ccNumber = lbound;
+        midi_send_cc(&midi_device, 0, 2* section + 109, 1);
+      } else {}
+      return false;
+      break;
+    case MIDI_ANULL:
+      if (record->event.pressed) {
+        midi_send_cc(&midi_device, 0, 2 * current_MIDI_ccNumber - 1, 1);
+      } else {}
+      return false;
+      break;
+    case MIDI_HIDE:
+      if (record->event.pressed) {
+        midi_send_cc(&midi_device, 0, 2* section + 110, 1);
+      } else {}
+      return false;
       break;
   }
   return true;
@@ -97,17 +139,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_LAYERS] = LAYOUT(
              TO(_DEV),
     TO(_DISCORD),    _______,    _______,
-    TO(_LRFLAG),    TO(_MEDIA),    _______
+    TO(_LR1),    TO(_MEDIA),    _______
   ),
-  [_LRFLAG] = LAYOUT(
-             MI_TOGG,
-    MIDI_CC1,    MIDI_CC2,    MIDI_CC3,
-    MO(_LRRATE),    TO(_MEDIA),    XXXXXXX
-  ),
-  [_LRRATE] = LAYOUT(
-             KC_0,
-    KC_1,    KC_2,    KC_3,
-    _______,    KC_4,    KC_5
+  [_LR1] = LAYOUT(
+             MIDI_ANULL,
+    MIDI_PREV,    MIDI_HIDE,    MIDI_NEXT,
+    MIDI_SPRV,    TO(_MEDIA),    MIDI_SNXT
   )
 };
 
@@ -117,8 +154,7 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
   [_DISCORD] = { ENCODER_CCW_CW(LCTL(KC_LBRC), LCTL(KC_RBRC)) },
   [_DEV] = { ENCODER_CCW_CW(KC_BRID, KC_BRIU) },
   [_LAYERS] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
-  [_LRFLAG] = { ENCODER_CCW_CW(KC_LEFT, KC_RIGHT) },
-  [_LRRATE] = { ENCODER_CCW_CW(MIDI_SENDD, MIDI_SENDU) },
+  [_LR1] = { ENCODER_CCW_CW(MIDI_SENDD, MIDI_SENDU) },
 };
 
 #endif
